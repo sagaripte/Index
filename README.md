@@ -2,9 +2,22 @@
 
 **IX turns a list of POJOs into a queryable index — filter and aggregate without building maps.**
 
-The usual Java approach to in-memory lookups is building `Map` objects upfront — one per query shape, nested deeper as you add dimensions. IX wraps your list once and builds indexes lazily on first use, so you can filter by any field combination without deciding the structure ahead of time.
+The usual Java approach to in-memory lookups is building `Map` objects — one per query shape, nested deeper as you add dimensions:
 
-Wrap your list once, filter and aggregate as many ways as you like. The index for each field is built on first use and shared across every derived view.
+```java
+// Standard Java — structure committed before you know all your queries
+Map<String, Map<String, List<Trade>>> byStatusAndDesk = new LinkedHashMap<>();
+for (Trade t : trades) {
+    byStatusAndDesk
+        .computeIfAbsent(t.getStatus(), k -> new LinkedHashMap<>())
+        .computeIfAbsent(t.getDesk(), k -> new ArrayList<>())
+        .add(t);
+}
+// Need a third dimension? Add another level of nesting.
+// Need sum instead of list? Rewrite the whole thing.
+```
+
+IX wraps a collection and provides fluent filter and aggregate methods:
 
 ```java
 Index<Trade> idx = Index.of(trades);
@@ -12,15 +25,15 @@ Index<Trade> idx = Index.of(trades);
 double pnl = idx
     .filter(Trade::getDesk, "EQD")
     .filter(Trade::getRegion, "EMEA")
-    .filter(t -> t.getStatus().equals("ACTIVE"))
+    .filter(Trade::getStatus, "ACTIVE")
     .sum(Trade::getPnl);
 ```
 
-No schema. No copying. Your `Trade` objects come back as `Trade` objects.
+Add a filter on any field without restructuring anything — the index for that field is built on first use and shared across every query derived from the same root.
 
-The sweet spot is **read-heavy, snapshot-style data in the 10K–500K row range** where the query dimensions aren't all known upfront — a reporting engine rendering a summary table, drilldowns, and subtotals over the same snapshot is the canonical case.
+The sweet spot is **read-heavy, snapshot-style data in the 10K–500K row range** — an end-of-day job, a reporting engine rendering a summary table with drilldowns, anything that loads a snapshot and slices it multiple ways.
 
-It doesn't fit everywhere. One fixed query? Use a `HashMap`. Data changing row by row? IX is rebuild-only. Need joins? Use a database. A few million rows? Reach for DuckDB or Arrow instead.
+It doesn't fit everywhere. One fixed lookup? Use a `HashMap`. Data changing row by row? IX is rebuild-only. Need joins? Use a database. A few million rows? Reach for DuckDB or Arrow instead.
 
 ---
 
