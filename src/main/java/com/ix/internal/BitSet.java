@@ -32,9 +32,7 @@ public class BitSet {
         return sum;
     }
 
-    /**
-     * Deep copy — fixes V1 aliasing bug where replace() shared the array reference.
-     */
+    /** Deep copy of another BitSet's data into this one. */
     public void replace(BitSet another) {
         this.data = another.data.clone();
     }

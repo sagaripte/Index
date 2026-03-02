@@ -463,8 +463,7 @@ class IndexTest {
         assertEquals(2100.0, row.sum(0), 0.001);
     }
 
-    // ── Regression: Double range filter with negative values ──────────────────
-    // Exercises the LongCodec.DOUBLE sign-bit flip fix (#4).
+    // ── Double range filter with negative values ──────────────────────────────
 
     @Test void range_double_negative_values() {
         record Pos(double value) {}
@@ -488,8 +487,7 @@ class IndexTest {
         assertEquals(-150.0, negSum, 0.001);
     }
 
-    // ── Regression: LocalDateTime codec millisecond precision ─────────────────
-    // Exercises the LongCodec.LOCAL_DATE_TIME millisecond fix (#8).
+    // ── LocalDateTime codec millisecond precision ─────────────────────────────
 
     @Test void range_localdatetime_millisecond_precision() {
         record Ts(LocalDateTime ts) {}
@@ -560,8 +558,7 @@ class IndexTest {
         assertDoesNotThrow(() -> Index.of(data).unique(Tagged::id, "T1"));
     }
 
-    // ── Regression: Aggregation count precision (stored as long, not double) ──
-    // Exercises fix #2.
+    // ── Aggregation count precision ───────────────────────────────────────────
 
     @Test void groupby_count_is_exact_long() {
         Aggregation.Results<String> result = Index.of(trades())

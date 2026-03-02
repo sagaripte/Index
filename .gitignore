@@ -1,3 +1,6 @@
 /build
 /gradle
 src/.DS_Store
+src/main/.DS_Store
+src/test/.DS_Store
+.DS_Store

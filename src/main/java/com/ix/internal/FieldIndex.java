@@ -5,35 +5,20 @@ import java.util.*;
 /**
  * Compact inverted index for equality-based field lookups.
  *
- * <h3>Memory layout vs the old Map&lt;Object, BitSet&gt; approach</h3>
+ * <h3>Memory layout</h3>
  *
  * <pre>
- *   Old:  Map&lt;Object, BitSet&gt;
- *         = distinctValues × (40 bytes BitSet object header + long[] data)
- *         ≈ 40 × D + 8N bits   where D = distinct values, N = rows
- *
- *   New:  long[][] bitmaps   (one long[] per distinct value, no per-value object overhead)
- *         + Map&lt;Object, Integer&gt; valueToId  (one Integer box per distinct value)
- *         ≈ 16 × D + 8N bits
+ *   long[][] bitmaps   (one long[] per distinct value, no per-value object overhead)
+ *   + Map&lt;Object, Integer&gt; valueToId  (one Integer box per distinct value)
+ *   ≈ 16 × D + 8N bits   where D = distinct values, N = rows
  * </pre>
  *
- * <p>For a field with 1 000 distinct values over 100 000 rows:
- * <ul>
- *   <li>Old: 40 000 bytes (BitSet headers) + 1 562 500 bytes (bits) ≈ 1.5 MB
- *   <li>New: 16 000 bytes (array headers) + 1 562 500 bytes (bits) ≈ 1.5 MB — same bits,
- *       but 24 KB less object overhead, and much better GC behaviour under high D
- * </ul>
- *
- * <p>For a field with 100 000 distinct values (e.g. a trade ID):
- * <ul>
- *   <li>Old: 4 MB of BitSet object headers alone
- *   <li>New: 1.6 MB — a 2.5× reduction in overhead
- * </ul>
+ * <p>For a field with 1 000 distinct values over 100 000 rows: ~1.5 MB.
+ * For 100 000 distinct values: ~1.6 MB.
  *
  * <h3>Encounter order</h3>
- * Values are stored in insertion order (matching the original {@code LinkedHashMap}
- * behaviour) so that {@code distinct()} and {@code groupBy()} return values in the
- * order they first appear in the dataset.
+ * Values are stored in insertion order so that {@code distinct()} and {@code groupBy()}
+ * return values in the order they first appear in the dataset.
  */
 public final class FieldIndex {
 
