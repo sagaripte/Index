@@ -22,11 +22,16 @@ IX wraps a collection and provides fluent filter and aggregate methods:
 ```java
 Index<Trade> idx = Index.of(trades);
 
-double pnl = idx
+Index<Trade> slice = idx
     .filter(Trade::getDesk, "EQD")
     .filter(Trade::getRegion, "EMEA")
-    .filter(Trade::getStatus, "ACTIVE")
-    .sum(Trade::getPnl);
+    .filter(Trade::getStatus, "ACTIVE");
+
+double pnl_sum = slice.sum(Trade::getPnl);
+
+for (Trade t : slice) {
+    // business logic
+}
 ```
 
 Add a filter on any field without restructuring anything — the index for that field is built on first use and shared across every query derived from the same root.
